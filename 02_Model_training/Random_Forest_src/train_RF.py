@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Random Forest Regression Training Script (CLI Version)
-基于Train/Test Split的详细评估
-
-Example:
-    python train_rf.py -d data.xlsx -k 50 --test_size 0.15
-    python train_rf.py --n_estimators 200 --max_depth 15
+Random Forest Regression Training Script 
 """
 
 import argparse
@@ -17,17 +12,14 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 
 # ---------- argument parsing ----------
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Random Forest regression with Train/Test split and detailed metrics")
-    parser.add_argument("-d", "--data", type=str, required=True, help="Path to raw-data Excel file/ data in dataframe format")
+    parser.add_argument("--data", type=str, required=True, help="Path to raw-data Excel file/ data in dataframe format")
     parser.add_argument("--model_dir", type=str, default="models", help="Directory where artefacts will be saved")
-    parser.add_argument("-k", "--random_key", type=int, default=50,help="Random seed for train_test_split")
-    parser.add_argument("--test_size", type=float, default=0.15,help="Test set ratio (e.g., 0.15 for 15%%)")
+    parser.add_argument("--random_state", type=int, default=42, help="Random seed for reproducibility")
     parser.add_argument("--n_estimators", type=int, default=100,help="Number of trees in the forest" )
     parser.add_argument( "--max_depth", type=int, default=10, help="Maximum depth of the tree (None for unlimited)")
     parser.add_argument( "--n_jobs", type=int, default=-1, help="Parallel jobs (-1 = use all cores)" )
@@ -37,25 +29,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-# ---------- metrics calculation ----------
-def calculate_metrics(actual: np.ndarray, predicted: np.ndarray) -> dict:
-    mse = mean_squared_error(actual, predicted)
-    rmse = np.sqrt(mse)
-    mae = mean_absolute_error(actual, predicted)
-    
-    # MAPE with zero-protection
-    mask = actual != 0
-    if np.any(mask):
-        mape = np.mean(np.abs((actual[mask] - predicted[mask]) / actual[mask])) * 100
-    else:
-        mape = np.nan
-        
-    return {
-        'mse': float(mse),
-        'rmse': float(rmse),
-        'mae': float(mae),
-        'mape': float(mape)
-    }
+
 
 def load_data(data, feat_cols):
     if isinstance(data, str):
@@ -87,28 +61,18 @@ def load_data(data, feat_cols):
         raise TypeError(f"data must be str (file path), pd.DataFrame, or np.ndarray, got {type(data)}")
 
 
-# ---------- metrics printing ----------
-def print_metrics(metrics: dict, dataset_name: str = "Dataset") -> None:
-    print(f"\n[Eval] {dataset_name} dataset result")
-    print(f"   MSE:  {metrics['mse']:.6f}")
-    print(f"   RMSE: {metrics['rmse']:.6f}")
-    print(f"   MAE:  {metrics['mae']:.6f}")
-    print(f"   MAPE: {metrics['mape']:.4f}%")
-
-
 # ---------- main pipeline ----------
 def train(data: str,
           model_dir: str = "models",
-          random_key: int = 50,
-          test_size: float = 0.15,
+          random_state: int = 42,
           n_estimators: int = 100,
           max_depth: int | None = 10,
           n_jobs: int = -1,
           feat_cols: list[str]  = ["Right_final", "Left_final", "Difference", "room_temperature"],
           target_col: str = "P1(uW)") -> None:
     """
-    Train a Random-Forest regressor with Train/Test split,
-    output detailed metrics for both sets, and persist model + artefacts.
+    Train a Random-Forest regressor using all data,
+    and persist model + artefacts.
     """
     if feat_cols is None:
         feat_cols = ["Right_final", "Left_final", "Difference", "room_temperature"]
@@ -122,40 +86,23 @@ def train(data: str,
     X = df[feat_cols].values
     y = df[target_col].values
     
-    # 3. train/test split (NO scaler for RF)
-    print(f"[Train] Splitting data (test_size={test_size}, random_state={random_key})…")
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=random_key
-    )
-    
-    # 4. model configuration
+    # 3. model configuration
     rf_params = {
         'n_estimators': n_estimators,
         'max_depth': max_depth,
-        'random_state': 42,
+        'random_state': random_state,
         'n_jobs': n_jobs
     }
     
-    # 5. model training
+    # 4. model training
     print("[Train] Training Random Forest…")
     model = RandomForestRegressor(**rf_params)
-    model.fit(X_train, y_train)
-    
-    # 6. evaluation and printing (refactored)
-    y_pred_train = model.predict(X_train)
-    train_metrics = calculate_metrics(y_train, y_pred_train)
-    print_metrics(train_metrics, "Train")
-    
-    y_pred_test = model.predict(X_test)
-    test_metrics = calculate_metrics(y_test, y_pred_test)
-    print_metrics(test_metrics, "Test")
-
+    model.fit(X, y)
 
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     
-    
-    # 9. save model 
-    model_file = os.path.join(model_dir, f'rf_model_{timestamp}__{random_key}.pkl')
+    # 5. save model 
+    model_file = os.path.join(model_dir, f'rf_model_{timestamp}.pkl')
     try:
         joblib.dump(model, model_file)
         print(f"[Save] Model saved to {model_file}")
@@ -169,14 +116,12 @@ def train(data: str,
 if __name__ == "__main__":
     args = parse_args()
     train(
-        data=args.data_path,
+        data=args.data,
         model_dir=args.model_dir,
-        random_key=args.random_key,
-        test_size=args.test_size,
+        random_state=args.random_state,
         n_estimators=args.n_estimators,
         max_depth=args.max_depth,
         n_jobs=args.n_jobs,
         feat_cols=args.feature_cols,
         target_col=args.target_col
     )
-

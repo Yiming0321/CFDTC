@@ -42,19 +42,11 @@ def predict(X_new: np.ndarray, poly: PolynomialFeatures, lin: LinearRegression):
     return lin.predict(poly.transform(X_new))
 
 
-def _is_numeric_list(lst: list):
-    """Quick heuristic: treat list as numeric if its first element can be cast to float."""
-    try:
-        float(lst[0])
-        return True
-    except ValueError:
-        return False
 
-
-def inference(model_path: str,
+def inference(model: str,
               data: str,
               feat_cols: list = ["Right_final", "Left_final", "Difference", "room_temperature"],
-              output_path: str=None):
+              output_dir: str=None):
     """
     Main inference entry point.
 
@@ -73,7 +65,7 @@ def inference(model_path: str,
     """
     # 1. Load model
     print("[load]Model loaing from json...")
-    with open(model_path, "r", encoding="utf-8") as f:
+    with open(model, "r", encoding="utf-8") as f:
         poly, lin = dict_to_model(json.load(f))
 
     # 2. Parse input_arg
@@ -87,13 +79,14 @@ def inference(model_path: str,
             df = pd.read_csv(data)
         else:
             raise ValueError(f"Unsupported file format: {data}. Use .xlsx, .xls, or .csv")
+        df = df[feat_cols].values
         input_source = "file"
         
     elif isinstance(data, pd.DataFrame):
         # 直接使用 DataFrame
         df = data.copy()
         input_source = "dataframe"
-        
+        df = df[feat_cols].values
     elif isinstance(data, np.ndarray):
         # numpy 数组转换为 DataFrame
         if data.ndim == 1:
@@ -101,7 +94,8 @@ def inference(model_path: str,
         if data.shape[1] != len(feat_cols):
             raise ValueError(f"Feature dimension mismatch: array has {data.shape[1]} columns, "
                            f"but feat_cols has {len(feat_cols)}")
-        df = pd.DataFrame(data, columns=feat_cols)
+        df = pd.DataFrame(data)
+        df = df[feat_cols].values
         input_source = "ndarray"
         
     else:
@@ -110,15 +104,18 @@ def inference(model_path: str,
 
     # 3. Predict
     print("[Infer]Prediction processing...")
-    pred = predict(df.values.tolist(), poly, lin)
+    pred = predict(df, poly, lin)
     print("[Predict] finished")
 
     # 4. Save results
-    if output_path is not None:
-        if os.path.exists(output_path):
-            os.makedirs(output_path, exist_ok=True)
-        out_file = os.path.join(output_path, "output.csv")
-        pd.DataFrame({"prediction": pred}).to_csv(out_file, index=False, float_format="%.6f")
+    if output_dir is not None:
+        if os.path.exists(output_dir):
+            os.makedirs(output_dir, exist_ok=True)
+        out_file = os.path.join(output_dir, "output.csv")
+
+        res_df = pd.DataFrame(df,columns=feat_cols)
+        res_df["predicted"] = pred
+        res_df.to_csv(out_file, index=False, float_format="%.6f")
         print(f"Results saved → {out_file}")
 
     return pred
@@ -127,24 +124,19 @@ def inference(model_path: str,
 def parse_args():
     parser = argparse.ArgumentParser( description="Polynomial-regression inference (single-parameter version: input can be file or numeric vector)")
     parser.add_argument("-m", "--model", required=True, help="Path to JSON model file")
-    parser.add_argument("-i", "--data", required=True, help='Data: file path (.csv/.xlsx) or numeric list, e.g. "23.1 45 0.8 22"')
-    parser.add_argument("--x_cols", nargs="+",  default=["Right_final", "Left_final", "Difference", "room_temperature"], help="Column names for independent variables (ignored for numeric input)")
-    parser.add_argument("-o", "--output", default="output", help="Directory where output.csv will be saved")
+    parser.add_argument("-d", "--data", required=True, help='Data: file path (.csv/.xlsx) or numeric list, e.g. "23.1 45 0.8 22"')
+    parser.add_argument("--feat_cols", nargs="+",  default=["Right_final", "Left_final", "Difference", "room_temperature"], help="Column names for independent variables (ignored for numeric input)")
+    parser.add_argument( "--output", default="output", help="Directory where output.csv will be saved")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
 
-    # # example 1 # call from CMD format
     args = parse_args()
     inference(model_path=args.model,
               data=args.data,
               x_cols=args.x_cols,
-              output_path=args.output)
+              output_dir=args.output)
 
-    # # example 2 # call from API format
-    # predict = inference(
-    #     model_path=r"your absolte model path ",
-    #     data=r"your absolte output path "
-    # )
+
 

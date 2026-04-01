@@ -24,7 +24,7 @@ def inference(
     model_path: str,
     data: Union[str, pd.DataFrame, np.ndarray],
     feat_cols = ["Right_final", "Left_final", "Difference", "room_temperature"],
-    out_dir: str = "./output",
+    output_dir: str = "./output",
     return_df: bool = True
 ):
     """
@@ -87,10 +87,10 @@ def inference(
     res_df["Predicted"] = y_pred
 
     # 仅在输入为文件路径时保存到磁盘
-    if input_source == "file" and out_dir:
-        os.makedirs(out_dir, exist_ok=True)
+    if input_source == "file" and output_dir:
+        os.makedirs(output_dir, exist_ok=True)
         out_file = f"xgb_result_{datetime.now():%Y%m%d%H%M%S}.xlsx"
-        out_path = os.path.join(out_dir, out_file)
+        out_path = os.path.join(output_dir, out_file)
         res_df.to_excel(out_path, index=False)
         print(f"[Infer] Results saved -> {out_path}")
 
@@ -107,17 +107,16 @@ def get_args():
     parser.add_argument("--feat_cols", nargs="+", 
                        default=["Right_final", "Left_final", "Difference", "room_temperature"], 
                        help="feature column names")
-    parser.add_argument("--out_dir", default="./output", help="output directory")
+    parser.add_argument("--output", default="./output", help="output directory")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
-    # cmd calling method
+
     args = get_args()
     result = inference(
         model_path=args.model,
         data=args.data, 
         feat_cols=args.feat_cols,
-        out_dir=args.out_dir
+        output_dir=args.output
     )
-

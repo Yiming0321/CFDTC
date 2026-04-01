@@ -69,7 +69,7 @@ class FlexibleMLP(nn.Module):
 # -------------------------------
 # 2. Data Preparation Function
 # -------------------------------
-def prepare_data(data_path, test_size=0.2, random_state=42):
+def prepare_data(path, test_size=0.2, random_state=42):
     """
     Prepare training and testing data from Excel file.
     
@@ -78,7 +78,7 @@ def prepare_data(data_path, test_size=0.2, random_state=42):
     
     Parameters:
     -----------
-    data_path : str
+    path : str
         Path to the Excel data file
     test_size : float
         Proportion of dataset to include in test split (0-1)
@@ -99,7 +99,7 @@ def prepare_data(data_path, test_size=0.2, random_state=42):
         - X_data: Original feature DataFrame
     """
     # Load data
-    data = pd.read_excel(data_path)
+    data = pd.read_excel(path)
     X = data[['Right_final', 'Left_final', 'Difference', 'room_temperature']]
     y = np.log10(data['P1(uW)'])  # Apply log10 transformation to target
     
@@ -224,14 +224,13 @@ def train_mlp_model(
     return model, train_losses, test_losses
 
 # -------------------------------
-# 4. Save Model and Results Function
+# 4. Save Model Function
 # -------------------------------
-def save_model_and_results(model, scaler, X_all, y_all_log, X_data, save_dir):
+def save_model(model, scaler, X_data, save_dir):
     """
-    Save trained model and prediction results.
+    Save trained model.
     
-    Saves model state dict with configuration, scaler, predictions,
-    and generates accuracy statistics.
+    Saves model state dict with configuration and scaler.
     
     Parameters:
     -----------
@@ -239,10 +238,6 @@ def save_model_and_results(model, scaler, X_all, y_all_log, X_data, save_dir):
         Trained model
     scaler : StandardScaler
         Fitted scaler for feature standardization
-    X_all : torch.Tensor
-        All data features as tensor
-    y_all_log : np.array
-        All log-transformed targets
     X_data : pd.DataFrame
         Original feature DataFrame
     save_dir : str
@@ -250,44 +245,13 @@ def save_model_and_results(model, scaler, X_all, y_all_log, X_data, save_dir):
         
     Returns:
     --------
-    tuple : (results_file, model_file)
-        - results_file: Path to Excel file with predictions
-        - model_file: Path to saved model checkpoint (.pth)
+    str : Path to saved model checkpoint (.pth)
     """
     # Create timestamp
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     
     # Ensure save directory exists
     os.makedirs(save_dir, exist_ok=True)
-    
-    # Predict all data
-    model.eval()
-    with torch.no_grad():
-        y_all_pred_log = model(X_all).numpy().flatten()
-    
-    # Convert back to original power values
-    y_act = 10**y_all_log
-    y_pred = 10**y_all_pred_log
-    
-    # Calculate residuals and percentage errors
-    residuals = y_act - y_pred
-    percentage = np.abs(residuals / y_act)
-    
-    # Create results DataFrame
-    results_df = pd.DataFrame({
-        'Right_final': X_data['Right_final'],
-        'Left_final': X_data['Left_final'],
-        'Difference': X_data['Difference'],
-        'room_temperature': X_data['room_temperature'],
-        'Actual_Power(uW)': y_act,
-        'Predicted_Power(uW)': y_pred,
-        'Residuals(uW)': residuals,
-        'Percentage_Error': percentage
-    })
-    
-    # Save results
-    results_file = os.path.join(save_dir, f'res_mlp_{timestamp}.xlsx')
-    results_df.to_excel(results_file, index=False)
     
     # Save model checkpoint (state dict + config + scaler)
     model_file = os.path.join(save_dir, f'mlp_regression_{timestamp}.pth')
@@ -298,20 +262,9 @@ def save_model_and_results(model, scaler, X_all, y_all_log, X_data, save_dir):
         'input_size': X_data.shape[1]
     }, model_file)
     
-    # Calculate accuracy statistics
-    percent20 = results_df[results_df['Percentage_Error'] < 0.2].shape[0]
-    percent10 = results_df[results_df['Percentage_Error'] < 0.1].shape[0]
-    total = results_df.shape[0]
-    
-    print(f"\nResult Statistics:")
-    print(f"Total samples: {total}")
-    print(f"<20% error: {percent20} ({percent20/total*100:.2f}%)")
-    print(f"<10% error: {percent10} ({percent10/total*100:.2f}%)")
-    
-    print(f"\nResults saved to: {results_file}")
     print(f"Model saved to: {model_file}")
     
-    return results_file, model_file
+    return model_file
 
 # -------------------------------
 # 5. Training Visualization Function
@@ -490,27 +443,35 @@ def predict_with_model(model, scaler, input_data):
 # -------------------------------
 # 8. Complete Training Pipeline
 # -------------------------------
-def run_full_training(data_path, save_dir, test_size=0.2, random_state=42):
+def train(data, model_dir, test_size=0.2, random_state=42, hidden_sizes=[128] + [256] * 16 + [128], lr=0.0003, epochs=1000, patience=80):
     """
     End-to-end training pipeline.
     
     Orchestrates data preparation, model training, visualization, 
-    and result saving in one workflow.
+    and model saving in one workflow.
     
     Parameters:
     -----------
-    data_path : str
-        Path to Excel data file
+    data : str, pd.DataFrame, or np.ndarray
+        Path to Excel data file, pandas DataFrame, or numpy array
     save_dir : str
-        Directory for saving results and model
+        Directory for saving model
     test_size : float
         Test set proportion (0-1)
     random_state : int
         Random seed for reproducibility
+    hidden_sizes : list
+        Hidden layer architecture (list of neuron counts)
+    lr : float
+        Learning rate for Adam optimizer
+    epochs : int
+        Maximum number of training epochs
+    patience : int
+        Early stopping patience (epochs without improvement)
         
     Returns:
     --------
-    dict : Training results containing model, scaler, and file paths
+    dict : Training results containing model, scaler, and file path
     """
     print("="*50)
     print("Start training ...")
@@ -520,26 +481,27 @@ def run_full_training(data_path, save_dir, test_size=0.2, random_state=42):
     print("\n[load] Preparing data...")
     (X_train, X_test, y_train, y_test, 
      scaler, X_all, y_all_log, X_data) = prepare_data(
-        data_path, test_size=test_size, random_state=random_state
+        data, test_size=test_size, random_state=random_state
     )
     
     # 2. Train model
     print("\n[train] Starting training with train set...")
     model, train_losses, test_losses = train_mlp_model(
-        X_train, y_train, X_test, y_test
+        X_train, y_train, X_test, y_test, 
+        hidden_sizes=hidden_sizes, lr=lr, epochs=epochs, patience=patience
     )
     
     # 3. Visualize training
     print("\n[train] Training with quick view ...")
     plot_path = visualize_training(
         model, X_test, y_test, 
-        train_losses, test_losses, save_dir
+        train_losses, test_losses, model_dir
     )
     
-    # 4. Save model and results
-    print("\n[Save] Saving model and results...")
-    results_file, model_file = save_model_and_results(
-        model, scaler, X_all, y_all_log, X_data, save_dir
+    # 4. Save model
+    print("\n[Save] Saving model...")
+    model_file = save_model(
+        model, scaler, X_data, model_dir
     )
     
     # 5. Return results
@@ -549,7 +511,6 @@ def run_full_training(data_path, save_dir, test_size=0.2, random_state=42):
     return {
         'model': model,
         'scaler': scaler,
-        'results_file': results_file,
         'model_file': model_file,
         'plot_path': plot_path
     }
@@ -559,7 +520,7 @@ def run_full_training(data_path, save_dir, test_size=0.2, random_state=42):
 # -------------------------------
 def inference(model_path, 
               data, 
-              save_dir=None):
+              output_dir=None):
     """
     Inference pipeline using saved model.
     
@@ -608,10 +569,10 @@ def inference(model_path,
     input_df['Predicted_Power(uW)'] = predictions
     
     # Optional: Save results
-    if save_dir:
-        os.makedirs(save_dir, exist_ok=True)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
         timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-        pred_file = os.path.join(save_dir, f'predictions_{timestamp}.csv')
+        pred_file = os.path.join(output_dir, f'predictions_{timestamp}.csv')
         input_df.to_csv(pred_file, index=False)
         print(f"\nPredictions saved to: {pred_file}")
     
@@ -620,25 +581,31 @@ def inference(model_path,
     
     return input_df
 
-# -------------------------------
-# Example Usage
-# -------------------------------
+
+def get_args():
+    import argparse
+    parser = argparse.ArgumentParser(description="MLP Training")
+    parser.add_argument("--data", required=True, help="path to input file (.xlsx or .csv) or directly pd.DataFrame/np.ndarray")
+    parser.add_argument("--model_dir", default="./model", help="directory to save model")
+    parser.add_argument("--test_size", type=float, default=0.2, help="test set proportion (0-1)")
+    parser.add_argument("--random_state", type=int, default=42, help="random seed for reproducibility")
+    parser.add_argument("--hidden_sizes", nargs="+", type=int, default=[128] + [256] * 16 + [128], help="hidden layer sizes")
+    parser.add_argument("--lr", type=float, default=0.0003, help="learning rate")
+    parser.add_argument("--epochs", type=int, default=1000, help="maximum number of training epochs")
+    parser.add_argument("--patience", type=int, default=80, help="early stopping patience")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    # Set paths
-    DATA_PATH = r"./original_data.xlsx" # replace to your absolute path
-    SAVE_DIR = r"./model"               # replace to your absolute path
-    
-    # Example 1: Run complete training
-    training_results = run_full_training(
-        data_path=DATA_PATH, 
-        save_dir=SAVE_DIR,
-        test_size=0.2,
-        random_state=42
+    args = get_args()
+    training_results = train(
+        data=args.data, 
+        model_dir=args.model_dir,
+        test_size=args.test_size,
+        random_state=args.random_state,
+        hidden_sizes=args.hidden_sizes,
+        lr=args.lr,
+        epochs=args.epochs,
+        patience=args.patience
     )
     
-    # Example 2: Run prediction with trained model
-    # prediction_results = inference(
-    #     model_path=training_results['model_file'],
-    #     data=sample_data,
-    #     save_dir=SAVE_DIR
-    # )

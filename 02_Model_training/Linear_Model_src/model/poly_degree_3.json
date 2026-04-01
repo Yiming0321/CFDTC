@@ -1,0 +1,291 @@
+{
+  "model_type": "polynomial_regression",
+  "degree": 3,
+  "feature_cols": [
+    "Right_final",
+    "Left_final",
+    "Difference",
+    "room_temperature"
+  ],
+  "n_features": 4,
+  "n_output_features": 34,
+  "powers": [
+    [
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      2,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      1,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      1,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      2,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      1,
+      0
+    ],
+    [
+      0,
+      1,
+      0,
+      1
+    ],
+    [
+      0,
+      0,
+      2,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      1
+    ],
+    [
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      3,
+      0,
+      0,
+      0
+    ],
+    [
+      2,
+      1,
+      0,
+      0
+    ],
+    [
+      2,
+      0,
+      1,
+      0
+    ],
+    [
+      2,
+      0,
+      0,
+      1
+    ],
+    [
+      1,
+      2,
+      0,
+      0
+    ],
+    [
+      1,
+      1,
+      1,
+      0
+    ],
+    [
+      1,
+      1,
+      0,
+      1
+    ],
+    [
+      1,
+      0,
+      2,
+      0
+    ],
+    [
+      1,
+      0,
+      1,
+      1
+    ],
+    [
+      1,
+      0,
+      0,
+      2
+    ],
+    [
+      0,
+      3,
+      0,
+      0
+    ],
+    [
+      0,
+      2,
+      1,
+      0
+    ],
+    [
+      0,
+      2,
+      0,
+      1
+    ],
+    [
+      0,
+      1,
+      2,
+      0
+    ],
+    [
+      0,
+      1,
+      1,
+      1
+    ],
+    [
+      0,
+      1,
+      0,
+      2
+    ],
+    [
+      0,
+      0,
+      3,
+      0
+    ],
+    [
+      0,
+      0,
+      2,
+      1
+    ],
+    [
+      0,
+      0,
+      1,
+      2
+    ],
+    [
+      0,
+      0,
+      0,
+      3
+    ]
+  ],
+  "intercept": 5002115.520962095,
+  "coefficients": [
+    -95520156.0682961,
+    153898947.42964408,
+    -249419103.7906989,
+    -542325.4439954634,
+    -215844868.4561838,
+    109010880.33124079,
+    -324855748.9434842,
+    7388498.646359394,
+    225297885.24628899,
+    -116287005.14090346,
+    -11805660.839433948,
+    -208568743.68077514,
+    19194159.288527846,
+    19513.155790324305,
+    -126145470.44890411,
+    29468829.666688394,
+    -155614300.08598053,
+    8321725.396482255,
+    90063775.90667957,
+    -60594946.27845339,
+    -4264013.3015603535,
+    -95019353.80469601,
+    12585738.705478014,
+    -142892.07256642243,
+    74272645.98071803,
+    15791129.925966423,
+    -8566035.38394545,
+    -76386076.20440911,
+    4302022.0825952785,
+    226411.22582755474,
+    -18633277.60028609,
+    8283716.622544894,
+    -369302.43559931585,
+    -232.85761182278696
+  ],
+  "feature_names": [
+    "Right_final",
+    "Left_final",
+    "Difference",
+    "room_temperature",
+    "Right_final^2",
+    "Right_final Left_final",
+    "Right_final Difference",
+    "Right_final room_temperature",
+    "Left_final^2",
+    "Left_final Difference",
+    "Left_final room_temperature",
+    "Difference^2",
+    "Difference room_temperature",
+    "room_temperature^2",
+    "Right_final^3",
+    "Right_final^2 Left_final",
+    "Right_final^2 Difference",
+    "Right_final^2 room_temperature",
+    "Right_final Left_final^2",
+    "Right_final Left_final Difference",
+    "Right_final Left_final room_temperature",
+    "Right_final Difference^2",
+    "Right_final Difference room_temperature",
+    "Right_final room_temperature^2",
+    "Left_final^3",
+    "Left_final^2 Difference",
+    "Left_final^2 room_temperature",
+    "Left_final Difference^2",
+    "Left_final Difference room_temperature",
+    "Left_final room_temperature^2",
+    "Difference^3",
+    "Difference^2 room_temperature",
+    "Difference room_temperature^2",
+    "room_temperature^3"
+  ]
+}

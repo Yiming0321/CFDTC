@@ -19,15 +19,13 @@ from datetime import datetime
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
-from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 
 # ---------- argument parsing ----------
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Polynomial regression fitting with coefficient preservation")
-    parser.add_argument("-d", "--data", type=str, required=True, help="Path to input Excel file")
-    parser.add_argument("--out_dir", type=str, default="poly_output", help="Output directory for results")
-    parser.add_argument("-k", "--random_key", type=int, default=50, help="Random seed for reproducibility")
+    parser.add_argument("--data", type=str, required=True, help="Path to input Excel file")
+    parser.add_argument("--model_dir", type=str, default="model", help="Output directory for model saving")
     parser.add_argument("--degree", type=int, default=None, help="Single polynomial degree (e.g., 3). If not set, uses degree_range")
     parser.add_argument("--degree_range", nargs=2, type=int, default=[1, 5], metavar=("START", "END"), help="Range of degrees to fit (inclusive), default: 1 5")
     parser.add_argument("--feature_cols", nargs="+", default=["Right_final", "Left_final", "Difference", "room_temperature"], help="Feature column names (space-separated)")
@@ -35,37 +33,6 @@ def parse_args() -> argparse.Namespace:
     
     return parser.parse_args()
 
-
-# ---------- metrics calculation ----------
-def calculate_metrics(actual: np.ndarray, predicted: np.ndarray) -> dict:
-    """
-    Calculate regression metrics with zero-protection for MAPE.
-    """
-    mse = mean_squared_error(actual, predicted)
-    rmse = np.sqrt(mse)
-    mae = mean_absolute_error(actual, predicted)
-    
-    mask = actual != 0
-    mape = np.mean(np.abs((actual[mask] - predicted[mask]) / actual[mask])) * 100 if np.any(mask) else np.nan
-    
-    return {
-        'mse': float(mse),
-        'rmse': float(rmse),
-        'mae': float(mae),
-        'mape': float(mape),
-        'r2': float(1 - mse / np.var(actual))
-    }
-
-
-# ---------- metrics printing ----------
-def print_metrics(metrics: dict, dataset_name: str = "Dataset") -> None:
-    """Format and print evaluation metrics."""
-    print(f"\n[Eval] {dataset_name} fitting result")
-    print(f"   MSE:   {metrics['mse']:.6f}")
-    print(f"   RMSE:  {metrics['rmse']:.6f}")
-    print(f"   MAE:   {metrics['mae']:.6f}")
-    print(f"   MAPE:  {metrics['mape']:.4f}%")
-    print(f"   R²:    {metrics['r2']:.6f}")
 
 
 # ---------- data loading helper ----------
@@ -99,12 +66,11 @@ def fit_polynomial(
     y: pd.Series,
     degree: int,
     feature_cols: list[str]
-) -> tuple[pd.DataFrame, pd.DataFrame, object]:
+) -> tuple[pd.DataFrame, object]:
     """
-    Fit polynomial regression and return results.
+    Fit polynomial regression and return coefficients and model.
     
     Returns:
-        result_df: Predictions and residuals
         coef_df: Coefficients with feature names
         model: Fitted pipeline
     """
@@ -114,19 +80,10 @@ def fit_polynomial(
     )
     
     model.fit(X, y)
-    y_pred = model.predict(X)
     
     coef = model.named_steps['linearregression'].coef_
     intercept = model.named_steps['linearregression'].intercept_
     feature_names = model.named_steps['polynomialfeatures'].get_feature_names_out(feature_cols)
-    
-    residual = y - y_pred
-    result_df = pd.DataFrame({
-        'Actual': y.values,
-        'Predicted': y_pred,
-        'Residual': residual,
-        'Residual_Ratio': np.abs(residual / np.where(y != 0, y, np.nan))
-    })
     
     coefficients = np.insert(coef, 0, intercept)
     coef_df = pd.DataFrame({
@@ -134,7 +91,7 @@ def fit_polynomial(
         'Coefficient': coefficients
     })
     
-    return result_df, coef_df, model
+    return coef_df, model
 
 
 # ---------- save model parameters ----------
@@ -181,8 +138,7 @@ def save_model_params(
 # ---------- main pipeline ----------
 def train(
     data: str | pd.DataFrame,
-    out_dir: str = r".\output",
-    random_key: int = 50,
+    model_dir: str = r".\output",
     degree: int | None = None,
     degree_range: tuple[int, int] = (1, 5),
     feature_cols: list[str] | None = None,
@@ -193,8 +149,7 @@ def train(
     
     Args:
         data: Input data - either file path (str) or pandas DataFrame
-        out_dir: Output directory for results
-        random_key: Random seed for reproducibility
+        model_dir: Output directory for results
         degree: Single polynomial degree (overrides degree_range if set)
         degree_range: Range of degrees to fit (inclusive)
         feature_cols: Feature column names
@@ -203,11 +158,8 @@ def train(
     if feature_cols is None:
         feature_cols = ["Right_final", "Left_final", "Difference", "room_temperature"]
     
-    # Create output directories
-    out_path = pathlib.Path(out_dir)
-    model_dir = out_path / "model"
-    out_path.mkdir(parents=True, exist_ok=True)
-    model_dir.mkdir(parents=True, exist_ok=True)
+    # Create model directories
+    os.makedirs(model_dir, exist_ok=True)
     
     # Load data
     print("[Load] Loading data...")
@@ -228,17 +180,15 @@ def train(
         print(f"\n[Train] Fitting polynomial degree {d}...")
         
         # Fit model
+        coef_df, model = fit_polynomial(X, y, d, feature_cols)
+        
+
         result_df, coef_df, model = fit_polynomial(X, y, d, feature_cols)
-        
-        # Calculate and print metrics
-        metrics = calculate_metrics(y.values, result_df['Predicted'].values)
-        print_metrics(metrics, f"Degree-{d}")
-        
         # Save model parameters to JSON
-        json_file = model_dir / f'poly_degree_{d}_{timestamp}__{random_key}.json'
+        json_file = f'{model_dir}/poly_degree_{d}_{timestamp}.json'
         save_model_params(model, feature_cols, d, str(json_file))
         
-        print(f"[Info] Coefficients count: {len(coef_df)}")
+        json_file = model_dir / f'poly_degree_{d}_{timestamp}__{random_key}.json'
         print("-" * 50)
     
     print(f"\n[Done] All polynomial fittings completed. Models saved in {model_dir}/")
@@ -247,20 +197,15 @@ def train(
 # ---------- entry point ----------
 if __name__ == "__main__":
     
-    # # example 1 # call from CMD format
+    
     args = parse_args()
     train(
         data=args.data,
-        out_dir=args.out_dir,
-        random_key=args.random_key,
+        model_dir=args.model_dir,
         degree=args.degree,
         degree_range=tuple(args.degree_range),
         feature_cols=args.feature_cols,
         target_col=args.target_col
     )
 
-    # # example 2 # call from API format
-    # train(
-    #     data=r"your absolte data path ",
-    #     out_dir=r"your absolte output path "
-    # )
+

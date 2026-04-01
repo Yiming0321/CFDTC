@@ -45,7 +45,7 @@ def inference(
     model: Optional[object] = None,
     model_path: Optional[str] = None,
     feature_cols: Optional[List[str]] = ['Right_final', 'Left_final', 'Difference', 'room_temperature'],
-    out_dir: str = "./output"
+    output_dir: str = "./output"
 ) -> Union[pd.DataFrame, float]:
     """
     Unified inference interface for Random Forest.
@@ -124,10 +124,10 @@ def inference(
         result["Predicted_P1(uW)"] = preds
         
         # Save
-        pathlib.Path(out_dir).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
         timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         out_file = f"rf_infer_result_{timestamp}.xlsx"
-        out_path = pathlib.Path(out_dir) / out_file
+        out_path = pathlib.Path(output_dir) / out_file
         result.to_excel(out_path, index=False)
         print(f"[Save] Inference results saved to {out_path}")
         
@@ -155,7 +155,7 @@ def parse_args() -> argparse.Namespace:
         help="Feature column names (space-separated)"
     )
     parser.add_argument(
-        "--out_dir", type=str, default="./infer_output",
+        "--output_dir", type=str, default="./infer_output",
         help="Output directory for batch inference results"
     )
     parser.add_argument(
@@ -173,6 +173,6 @@ if __name__ == "__main__":
         model_path=args.model,
         data=args.data,  # 这里传入文件路径字符串
         feat_cols=args.feat_cols,
-        out_dir=args.out_dir
+        output_dir=args.output_dir
     )
 

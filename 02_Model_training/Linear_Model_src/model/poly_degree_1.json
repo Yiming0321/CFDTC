@@ -1,0 +1,51 @@
+{
+  "model_type": "polynomial_regression",
+  "degree": 1,
+  "feature_cols": [
+    "Right_final",
+    "Left_final",
+    "Difference",
+    "room_temperature"
+  ],
+  "n_features": 4,
+  "n_output_features": 4,
+  "powers": [
+    [
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1
+    ]
+  ],
+  "intercept": 14114.230628841402,
+  "coefficients": [
+    29661.694420656488,
+    -21471.914169790292,
+    51133.60859044702,
+    -543.6370340505653
+  ],
+  "feature_names": [
+    "Right_final",
+    "Left_final",
+    "Difference",
+    "room_temperature"
+  ]
+}

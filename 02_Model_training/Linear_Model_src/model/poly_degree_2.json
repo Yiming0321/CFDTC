@@ -1,0 +1,131 @@
+{
+  "model_type": "polynomial_regression",
+  "degree": 2,
+  "feature_cols": [
+    "Right_final",
+    "Left_final",
+    "Difference",
+    "room_temperature"
+  ],
+  "n_features": 4,
+  "n_output_features": 14,
+  "powers": [
+    [
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      2,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      1,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      1,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      2,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      1,
+      0
+    ],
+    [
+      0,
+      1,
+      0,
+      1
+    ],
+    [
+      0,
+      0,
+      2,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      1
+    ],
+    [
+      0,
+      0,
+      0,
+      2
+    ]
+  ],
+  "intercept": -55188.75283555398,
+  "coefficients": [
+    145973.81249902994,
+    -416270.8179887652,
+    562244.6304885208,
+    4393.695120854979,
+    906153.5484830509,
+    -2701209.0382066383,
+    3607362.5866896613,
+    -5325.555854399152,
+    1632354.729816082,
+    -4333563.768022718,
+    15531.591335500334,
+    7940926.3547123745,
+    -20857.147186428083,
+    -87.60350747292098
+  ],
+  "feature_names": [
+    "Right_final",
+    "Left_final",
+    "Difference",
+    "room_temperature",
+    "Right_final^2",
+    "Right_final Left_final",
+    "Right_final Difference",
+    "Right_final room_temperature",
+    "Left_final^2",
+    "Left_final Difference",
+    "Left_final room_temperature",
+    "Difference^2",
+    "Difference room_temperature",
+    "room_temperature^2"
+  ]
+}

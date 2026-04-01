@@ -1,0 +1,1019 @@
+{
+  "model_type": "polynomial_regression",
+  "degree": 5,
+  "feature_cols": [
+    "Right_final",
+    "Left_final",
+    "Difference",
+    "room_temperature"
+  ],
+  "n_features": 4,
+  "n_output_features": 125,
+  "powers": [
+    [
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      2,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      1,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      1,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      2,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      1,
+      0
+    ],
+    [
+      0,
+      1,
+      0,
+      1
+    ],
+    [
+      0,
+      0,
+      2,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      1
+    ],
+    [
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      3,
+      0,
+      0,
+      0
+    ],
+    [
+      2,
+      1,
+      0,
+      0
+    ],
+    [
+      2,
+      0,
+      1,
+      0
+    ],
+    [
+      2,
+      0,
+      0,
+      1
+    ],
+    [
+      1,
+      2,
+      0,
+      0
+    ],
+    [
+      1,
+      1,
+      1,
+      0
+    ],
+    [
+      1,
+      1,
+      0,
+      1
+    ],
+    [
+      1,
+      0,
+      2,
+      0
+    ],
+    [
+      1,
+      0,
+      1,
+      1
+    ],
+    [
+      1,
+      0,
+      0,
+      2
+    ],
+    [
+      0,
+      3,
+      0,
+      0
+    ],
+    [
+      0,
+      2,
+      1,
+      0
+    ],
+    [
+      0,
+      2,
+      0,
+      1
+    ],
+    [
+      0,
+      1,
+      2,
+      0
+    ],
+    [
+      0,
+      1,
+      1,
+      1
+    ],
+    [
+      0,
+      1,
+      0,
+      2
+    ],
+    [
+      0,
+      0,
+      3,
+      0
+    ],
+    [
+      0,
+      0,
+      2,
+      1
+    ],
+    [
+      0,
+      0,
+      1,
+      2
+    ],
+    [
+      0,
+      0,
+      0,
+      3
+    ],
+    [
+      4,
+      0,
+      0,
+      0
+    ],
+    [
+      3,
+      1,
+      0,
+      0
+    ],
+    [
+      3,
+      0,
+      1,
+      0
+    ],
+    [
+      3,
+      0,
+      0,
+      1
+    ],
+    [
+      2,
+      2,
+      0,
+      0
+    ],
+    [
+      2,
+      1,
+      1,
+      0
+    ],
+    [
+      2,
+      1,
+      0,
+      1
+    ],
+    [
+      2,
+      0,
+      2,
+      0
+    ],
+    [
+      2,
+      0,
+      1,
+      1
+    ],
+    [
+      2,
+      0,
+      0,
+      2
+    ],
+    [
+      1,
+      3,
+      0,
+      0
+    ],
+    [
+      1,
+      2,
+      1,
+      0
+    ],
+    [
+      1,
+      2,
+      0,
+      1
+    ],
+    [
+      1,
+      1,
+      2,
+      0
+    ],
+    [
+      1,
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      1,
+      0,
+      2
+    ],
+    [
+      1,
+      0,
+      3,
+      0
+    ],
+    [
+      1,
+      0,
+      2,
+      1
+    ],
+    [
+      1,
+      0,
+      1,
+      2
+    ],
+    [
+      1,
+      0,
+      0,
+      3
+    ],
+    [
+      0,
+      4,
+      0,
+      0
+    ],
+    [
+      0,
+      3,
+      1,
+      0
+    ],
+    [
+      0,
+      3,
+      0,
+      1
+    ],
+    [
+      0,
+      2,
+      2,
+      0
+    ],
+    [
+      0,
+      2,
+      1,
+      1
+    ],
+    [
+      0,
+      2,
+      0,
+      2
+    ],
+    [
+      0,
+      1,
+      3,
+      0
+    ],
+    [
+      0,
+      1,
+      2,
+      1
+    ],
+    [
+      0,
+      1,
+      1,
+      2
+    ],
+    [
+      0,
+      1,
+      0,
+      3
+    ],
+    [
+      0,
+      0,
+      4,
+      0
+    ],
+    [
+      0,
+      0,
+      3,
+      1
+    ],
+    [
+      0,
+      0,
+      2,
+      2
+    ],
+    [
+      0,
+      0,
+      1,
+      3
+    ],
+    [
+      0,
+      0,
+      0,
+      4
+    ],
+    [
+      5,
+      0,
+      0,
+      0
+    ],
+    [
+      4,
+      1,
+      0,
+      0
+    ],
+    [
+      4,
+      0,
+      1,
+      0
+    ],
+    [
+      4,
+      0,
+      0,
+      1
+    ],
+    [
+      3,
+      2,
+      0,
+      0
+    ],
+    [
+      3,
+      1,
+      1,
+      0
+    ],
+    [
+      3,
+      1,
+      0,
+      1
+    ],
+    [
+      3,
+      0,
+      2,
+      0
+    ],
+    [
+      3,
+      0,
+      1,
+      1
+    ],
+    [
+      3,
+      0,
+      0,
+      2
+    ],
+    [
+      2,
+      3,
+      0,
+      0
+    ],
+    [
+      2,
+      2,
+      1,
+      0
+    ],
+    [
+      2,
+      2,
+      0,
+      1
+    ],
+    [
+      2,
+      1,
+      2,
+      0
+    ],
+    [
+      2,
+      1,
+      1,
+      1
+    ],
+    [
+      2,
+      1,
+      0,
+      2
+    ],
+    [
+      2,
+      0,
+      3,
+      0
+    ],
+    [
+      2,
+      0,
+      2,
+      1
+    ],
+    [
+      2,
+      0,
+      1,
+      2
+    ],
+    [
+      2,
+      0,
+      0,
+      3
+    ],
+    [
+      1,
+      4,
+      0,
+      0
+    ],
+    [
+      1,
+      3,
+      1,
+      0
+    ],
+    [
+      1,
+      3,
+      0,
+      1
+    ],
+    [
+      1,
+      2,
+      2,
+      0
+    ],
+    [
+      1,
+      2,
+      1,
+      1
+    ],
+    [
+      1,
+      2,
+      0,
+      2
+    ],
+    [
+      1,
+      1,
+      3,
+      0
+    ],
+    [
+      1,
+      1,
+      2,
+      1
+    ],
+    [
+      1,
+      1,
+      1,
+      2
+    ],
+    [
+      1,
+      1,
+      0,
+      3
+    ],
+    [
+      1,
+      0,
+      4,
+      0
+    ],
+    [
+      1,
+      0,
+      3,
+      1
+    ],
+    [
+      1,
+      0,
+      2,
+      2
+    ],
+    [
+      1,
+      0,
+      1,
+      3
+    ],
+    [
+      1,
+      0,
+      0,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      4,
+      1,
+      0
+    ],
+    [
+      0,
+      4,
+      0,
+      1
+    ],
+    [
+      0,
+      3,
+      2,
+      0
+    ],
+    [
+      0,
+      3,
+      1,
+      1
+    ],
+    [
+      0,
+      3,
+      0,
+      2
+    ],
+    [
+      0,
+      2,
+      3,
+      0
+    ],
+    [
+      0,
+      2,
+      2,
+      1
+    ],
+    [
+      0,
+      2,
+      1,
+      2
+    ],
+    [
+      0,
+      2,
+      0,
+      3
+    ],
+    [
+      0,
+      1,
+      4,
+      0
+    ],
+    [
+      0,
+      1,
+      3,
+      1
+    ],
+    [
+      0,
+      1,
+      2,
+      2
+    ],
+    [
+      0,
+      1,
+      1,
+      3
+    ],
+    [
+      0,
+      1,
+      0,
+      4
+    ],
+    [
+      0,
+      0,
+      5,
+      0
+    ],
+    [
+      0,
+      0,
+      4,
+      1
+    ],
+    [
+      0,
+      0,
+      3,
+      2
+    ],
+    [
+      0,
+      0,
+      2,
+      3
+    ],
+    [
+      0,
+      0,
+      1,
+      4
+    ],
+    [
+      0,
+      0,
+      0,
+      5
+    ]
+  ],
+  "intercept": -2854785.8827689122,
+  "coefficients": [
+    -9008.724069141299,
+    -6796.595003059031,
+    -2212.142756281965,
+    6396.318137138057,
+    11442.10479678254,
+    12701.771527586165,
+    -1259.666600375602,
+    -56559.83585810543,
+    14447.748686763065,
+    -1745.9771928328764,
+    -25121.45657736329,
+    486.31057877736936,
+    -31438.37925828399,
+    80886.14343406107,
+    -11828.367350876179,
+    -11559.728690611357,
+    -268.6386304333568,
+    79045.42056506053,
+    -11233.29805788997,
+    -326.43063622883466,
+    98842.391902968,
+    57.7919954802686,
+    -19796.971337900093,
+    -57152.312930003805,
+    -10757.16821050577,
+    -476.1298473842282,
+    126880.40185708467,
+    149.6992111549566,
+    -28038.00995412031,
+    231851.2898217807,
+    -91.90721567468752,
+    8241.038616220747,
+    -289003.60275138007,
+    -7761.832234890695,
+    8075.804111016198,
+    7718.137131974355,
+    357.6669790418578,
+    -130066.10958506148,
+    7344.524566373575,
+    373.6125656007596,
+    -125781.91126937779,
+    -15.945586558900432,
+    -4284.198315680791,
+    -192349.18627866136,
+    6952.649732528372,
+    391.8748338452233,
+    -120464.48630394394,
+    -18.26226824446534,
+    -5317.424965432984,
+    42148.516375872874,
+    2.3166816855648853,
+    1033.2266497525766,
+    -234497.7026546919,
+    4672.809990988013,
+    6541.907325592746,
+    410.7424069356082,
+    -111941.8358635886,
+    -18.86757309038453,
+    -8522.650440358495,
+    380279.9566779022,
+    0.6053048459189074,
+    3205.225474925337,
+    -338131.44030178484,
+    -17687.301021214473,
+    1.711376839645945,
+    -2171.9988251727223,
+    103633.73764711953,
+    22360.11100694202,
+    267.89514785791744,
+    -2479.3500222868643,
+    -2354.053754007335,
+    -125.29626827952785,
+    150815.62233664893,
+    -2228.3082144929267,
+    -125.74553951440912,
+    143587.75444848274,
+    0.4492712348807068,
+    7227.867888166169,
+    -83068.17862084806,
+    -2102.5604826042527,
+    -125.74773188867039,
+    136042.7184686418,
+    0.002192374261546182,
+    7545.0359798406935,
+    -21077.43434562345,
+    0.44707886061913776,
+    -317.168091674502,
+    -61990.74427528111,
+    7316.080221494936,
+    -1977.2911569455068,
+    -125.26932565874785,
+    128113.49165814916,
+    -0.4784062299228988,
+    7929.226810492967,
+    59317.64043453636,
+    0.4805986041844265,
+    -384.1908306522785,
+    -80395.07478014223,
+    -1877.4711075308605,
+    -0.03351974356529256,
+    67.02273897777252,
+    18404.33050486304,
+    9193.551328679368,
+    -91.93278817959072,
+    -1852.9881049679163,
+    -124.3030519775891,
+    119773.85264259244,
+    -0.9662736811584776,
+    8339.639015557024,
+    209181.38852718336,
+    0.487867451235615,
+    -410.41220506409275,
+    -149863.74809264054,
+    -14623.12538058767,
+    -0.007268847051186815,
+    26.221374411813642,
+    69468.67331249386,
+    12745.654266301544,
+    338.8059366643373,
+    -0.026250896514105896,
+    40.801364565960775,
+    -51064.342807630914,
+    -3552.102937890474,
+    -430.738567071925,
+    -3.197450689399375
+  ],
+  "feature_names": [
+    "Right_final",
+    "Left_final",
+    "Difference",
+    "room_temperature",
+    "Right_final^2",
+    "Right_final Left_final",
+    "Right_final Difference",
+    "Right_final room_temperature",
+    "Left_final^2",
+    "Left_final Difference",
+    "Left_final room_temperature",
+    "Difference^2",
+    "Difference room_temperature",
+    "room_temperature^2",
+    "Right_final^3",
+    "Right_final^2 Left_final",
+    "Right_final^2 Difference",
+    "Right_final^2 room_temperature",
+    "Right_final Left_final^2",
+    "Right_final Left_final Difference",
+    "Right_final Left_final room_temperature",
+    "Right_final Difference^2",
+    "Right_final Difference room_temperature",
+    "Right_final room_temperature^2",
+    "Left_final^3",
+    "Left_final^2 Difference",
+    "Left_final^2 room_temperature",
+    "Left_final Difference^2",
+    "Left_final Difference room_temperature",
+    "Left_final room_temperature^2",
+    "Difference^3",
+    "Difference^2 room_temperature",
+    "Difference room_temperature^2",
+    "room_temperature^3",
+    "Right_final^4",
+    "Right_final^3 Left_final",
+    "Right_final^3 Difference",
+    "Right_final^3 room_temperature",
+    "Right_final^2 Left_final^2",
+    "Right_final^2 Left_final Difference",
+    "Right_final^2 Left_final room_temperature",
+    "Right_final^2 Difference^2",
+    "Right_final^2 Difference room_temperature",
+    "Right_final^2 room_temperature^2",
+    "Right_final Left_final^3",
+    "Right_final Left_final^2 Difference",
+    "Right_final Left_final^2 room_temperature",
+    "Right_final Left_final Difference^2",
+    "Right_final Left_final Difference room_temperature",
+    "Right_final Left_final room_temperature^2",
+    "Right_final Difference^3",
+    "Right_final Difference^2 room_temperature",
+    "Right_final Difference room_temperature^2",
+    "Right_final room_temperature^3",
+    "Left_final^4",
+    "Left_final^3 Difference",
+    "Left_final^3 room_temperature",
+    "Left_final^2 Difference^2",
+    "Left_final^2 Difference room_temperature",
+    "Left_final^2 room_temperature^2",
+    "Left_final Difference^3",
+    "Left_final Difference^2 room_temperature",
+    "Left_final Difference room_temperature^2",
+    "Left_final room_temperature^3",
+    "Difference^4",
+    "Difference^3 room_temperature",
+    "Difference^2 room_temperature^2",
+    "Difference room_temperature^3",
+    "room_temperature^4",
+    "Right_final^5",
+    "Right_final^4 Left_final",
+    "Right_final^4 Difference",
+    "Right_final^4 room_temperature",
+    "Right_final^3 Left_final^2",
+    "Right_final^3 Left_final Difference",
+    "Right_final^3 Left_final room_temperature",
+    "Right_final^3 Difference^2",
+    "Right_final^3 Difference room_temperature",
+    "Right_final^3 room_temperature^2",
+    "Right_final^2 Left_final^3",
+    "Right_final^2 Left_final^2 Difference",
+    "Right_final^2 Left_final^2 room_temperature",
+    "Right_final^2 Left_final Difference^2",
+    "Right_final^2 Left_final Difference room_temperature",
+    "Right_final^2 Left_final room_temperature^2",
+    "Right_final^2 Difference^3",
+    "Right_final^2 Difference^2 room_temperature",
+    "Right_final^2 Difference room_temperature^2",
+    "Right_final^2 room_temperature^3",
+    "Right_final Left_final^4",
+    "Right_final Left_final^3 Difference",
+    "Right_final Left_final^3 room_temperature",
+    "Right_final Left_final^2 Difference^2",
+    "Right_final Left_final^2 Difference room_temperature",
+    "Right_final Left_final^2 room_temperature^2",
+    "Right_final Left_final Difference^3",
+    "Right_final Left_final Difference^2 room_temperature",
+    "Right_final Left_final Difference room_temperature^2",
+    "Right_final Left_final room_temperature^3",
+    "Right_final Difference^4",
+    "Right_final Difference^3 room_temperature",
+    "Right_final Difference^2 room_temperature^2",
+    "Right_final Difference room_temperature^3",
+    "Right_final room_temperature^4",
+    "Left_final^5",
+    "Left_final^4 Difference",
+    "Left_final^4 room_temperature",
+    "Left_final^3 Difference^2",
+    "Left_final^3 Difference room_temperature",
+    "Left_final^3 room_temperature^2",
+    "Left_final^2 Difference^3",
+    "Left_final^2 Difference^2 room_temperature",
+    "Left_final^2 Difference room_temperature^2",
+    "Left_final^2 room_temperature^3",
+    "Left_final Difference^4",
+    "Left_final Difference^3 room_temperature",
+    "Left_final Difference^2 room_temperature^2",
+    "Left_final Difference room_temperature^3",
+    "Left_final room_temperature^4",
+    "Difference^5",
+    "Difference^4 room_temperature",
+    "Difference^3 room_temperature^2",
+    "Difference^2 room_temperature^3",
+    "Difference room_temperature^4",
+    "room_temperature^5"
+  ]
+}

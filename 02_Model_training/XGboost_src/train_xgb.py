@@ -93,7 +93,7 @@ def get_args():
     parser.add_argument("--eta", type=float, default=0.05)
     parser.add_argument("--subsample", type=float, default=0.9)
     parser.add_argument("--colsample", type=float, default=0.9)
-    parser.add_argument("--num_round", type=int, default=100)
+    parser.add_argument("--num_round", type=int, default=300)
     parser.add_argument("--early_stop", type=int, default=20)
     parser.add_argument("--seed", type=int, default=50)
     return parser.parse_args()
@@ -102,7 +102,6 @@ def get_args():
 if __name__ == "__main__":
 
     args = get_args()
-
     train(
         data=args.data,  
         model_dir=args.model_dir,
@@ -114,3 +113,4 @@ if __name__ == "__main__":
         early_stop=args.early_stop,
         seed=args.seed
     )
+
