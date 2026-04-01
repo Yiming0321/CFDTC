@@ -1,0 +1,12 @@
+{
+    "right_slope": 32.929401334453665,
+    "right_intercept": 26.198991029116957,
+    "right_r_value": 0.9363204732351573,
+    "right_p_value": 0.0,
+    "right_std_err": 0.04210419908892975,
+    "left_slope": 36.73321357059468,
+    "left_intercept": 26.301879648382524,
+    "left_r_value": 0.9356255660211805,
+    "left_p_value": 0.0,
+    "left_std_err": 0.047249997804695194
+}
