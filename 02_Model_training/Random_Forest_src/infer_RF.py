@@ -30,6 +30,8 @@ import joblib
 
 def load_model(model_path: str) -> object:
     """Load RandomForest model from joblib file."""
+    if not model_path:
+        raise ValueError("model_path must be provided when no pre-loaded model is supplied")
     print(f"[Load] Model loading from {model_path}")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found: {model_path}")
@@ -65,8 +67,8 @@ def inference(
     feature_cols = feature_cols or ["Right_final", "Left_final", "Difference", "room_temperature"]
     
     # Load model if not provided
-
-    model = load_model(model_path)
+    if model is None:
+        model = load_model(model_path)
     
     print("[Load] Data loading ...")
     # ---------- Single sample: dict ----------
@@ -143,7 +145,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model", type=str, default=None,
-        help="Direct path to model file (.pkl). If not provided, uses --model_dir"
+        help="Direct path to model file (.pkl)"
     )
     parser.add_argument(
         "-d", "--data", type=str, required=True,
@@ -172,7 +174,7 @@ if __name__ == "__main__":
     result = inference(
         model_path=args.model,
         data=args.data,  # 这里传入文件路径字符串
-        feat_cols=args.feat_cols,
+        feature_cols=args.feature_cols,
         output_dir=args.output_dir
     )
 

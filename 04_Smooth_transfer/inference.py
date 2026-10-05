@@ -76,7 +76,7 @@ def run_ensemble_inference(xgb_model_path, mlp_model_path, data_path, output_pat
     mlp_results = mlp_inference(
         model_path=mlp_model_path,
         data=data_path,
-        save_dir=None  # We'll save results ourselves
+        output_dir=None  # We'll save results ourselves
     )
     
     # Ensure both dataframes have the same index

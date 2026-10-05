@@ -94,8 +94,7 @@ def inference(model: str,
         if data.shape[1] != len(feat_cols):
             raise ValueError(f"Feature dimension mismatch: array has {data.shape[1]} columns, "
                            f"but feat_cols has {len(feat_cols)}")
-        df = pd.DataFrame(data)
-        df = df[feat_cols].values
+        df = np.asarray(data, dtype=float)
         input_source = "ndarray"
         
     else:
@@ -109,8 +108,7 @@ def inference(model: str,
 
     # 4. Save results
     if output_dir is not None:
-        if os.path.exists(output_dir):
-            os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(output_dir, exist_ok=True)
         out_file = os.path.join(output_dir, "output.csv")
 
         res_df = pd.DataFrame(df,columns=feat_cols)
@@ -133,9 +131,9 @@ def parse_args():
 if __name__ == "__main__":
 
     args = parse_args()
-    inference(model_path=args.model,
+    inference(model=args.model,
               data=args.data,
-              x_cols=args.x_cols,
+              feat_cols=args.feat_cols,
               output_dir=args.output)
 
 

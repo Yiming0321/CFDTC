@@ -14,7 +14,7 @@ Usage:
 import argparse
 import pandas as pd
 import os
-from TEAdjuster_multi import TEAdjuster as multi_adjuster
+from TEAdjuster import TEAdjuster as multi_adjuster
 from TEAdjuster_single import TEAdjuster as single_adjuster
 
 def run_single_adjuster(args):
@@ -50,7 +50,7 @@ def run_multi_adjuster(args):
         # Training mode
         adjuster = multi_adjuster(
             data_file=args.data_path,
-            save_path=args.save_path
+            parm_output_file=args.save_path
         )
         print("Training completed." if args.save_path else "Training completed (no output file provided).")
         return

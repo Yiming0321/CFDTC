@@ -183,12 +183,9 @@ def train(
         coef_df, model = fit_polynomial(X, y, d, feature_cols)
         
 
-        result_df, coef_df, model = fit_polynomial(X, y, d, feature_cols)
         # Save model parameters to JSON
-        json_file = f'{model_dir}/poly_degree_{d}_{timestamp}.json'
-        save_model_params(model, feature_cols, d, str(json_file))
-        
-        json_file = model_dir / f'poly_degree_{d}_{timestamp}__{random_key}.json'
+        json_file = os.path.join(model_dir, f'poly_degree_{d}_{timestamp}.json')
+        save_model_params(model, feature_cols, d, json_file)
         print("-" * 50)
     
     print(f"\n[Done] All polynomial fittings completed. Models saved in {model_dir}/")
