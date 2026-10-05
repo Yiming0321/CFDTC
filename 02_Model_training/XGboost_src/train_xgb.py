@@ -6,6 +6,7 @@ python train.py --data data.xlsx --out_dir exp1 --max_depth 8 --eta 0.05
 import os
 import argparse
 from typing import Union
+import numpy as np
 import pandas as pd
 import xgboost as xgb
 from datetime import datetime
@@ -38,15 +39,22 @@ def train(
     seed: int = 42,
     feat_cols=["Right_final", "Left_final", "Difference", "room_temperature"],
     label_col="P1(uW)",
+    log_target: bool = True,
 ):
-    """Train an XGBoost model and save it; no meta file generated."""
+    """Train an XGBoost model and save it; no meta file generated.
+
+    log_target=True 时用 log10(P1) 作为训练目标：平方误差变成相对误差，
+    低功率样本不再被高功率样本淹没（推理时需 10**pred 还原）。
+    """
     os.makedirs(model_dir, exist_ok=True)
 
     # load data
     print("[Train] Loading data…")
-    df = load_data(data)  
-    X, y = df[feat_cols].values, df[label_col].values
+    df = load_data(data)
+    X = df[feat_cols].values
+    y = np.log10(df[label_col].values) if log_target else df[label_col].values
     dtrain = xgb.DMatrix(X, label=y)
+    print(f"[Train] 目标空间: {'log10(P1)' if log_target else 'P1 原始值'}")
 
     # params
     params = dict(
@@ -71,13 +79,15 @@ def train(
         as_pandas=True,
         seed=seed,
     )
-    best_rounds = cv_res.shape[0]
-    print(f"[Train] Best CV RMSE: {cv_res['test-rmse-mean'].min():.6f}  rounds={best_rounds}")
+    best_rounds = int(cv_res['test-rmse-mean'].idxmin()) + 1
+    print(f"[Train] Best CV RMSE: {cv_res['test-rmse-mean'].min():.6f}  "
+          f"rounds={best_rounds}（CV 结果 {cv_res.shape[0]} 行）")
 
     # final model
     model = xgb.train(params, dtrain, num_boost_round=best_rounds)
 
-    # save
+    # save（把目标空间写进模型属性，推理时自动识别，无需额外的 meta 文件）
+    model.set_attr(log_target="1" if log_target else "0")
     ts = datetime.now().strftime("%Y%m%d%H%M%S")
     model_path = os.path.join(model_dir, f"xgb_model_{ts}.json")
     model.save_model(model_path)
@@ -96,6 +106,8 @@ def get_args():
     parser.add_argument("--num_round", type=int, default=300)
     parser.add_argument("--early_stop", type=int, default=20)
     parser.add_argument("--seed", type=int, default=50)
+    parser.add_argument("--no-log-target", dest="log_target", action="store_false",
+                        help="用原始 P1 训练（默认用 log10(P1)）")
     return parser.parse_args()
 
 
@@ -111,6 +123,7 @@ if __name__ == "__main__":
         colsample_bytree=args.colsample,
         num_round=args.num_round,
         early_stop=args.early_stop,
-        seed=args.seed
+        seed=args.seed,
+        log_target=args.log_target,
     )
 

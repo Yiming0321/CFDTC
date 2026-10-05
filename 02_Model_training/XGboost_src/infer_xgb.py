@@ -5,7 +5,7 @@ Inference entry – supports file path, DataFrame, or numpy array as input
 """
 import os
 import argparse
-from typing import Union
+from typing import Union, Optional
 import pandas as pd
 import numpy as np
 import xgboost as xgb
@@ -25,7 +25,8 @@ def inference(
     data: Union[str, pd.DataFrame, np.ndarray],
     feat_cols = ["Right_final", "Left_final", "Difference", "room_temperature"],
     output_dir: str = "./output",
-    return_df: bool = True
+    return_df: bool = True,
+    log_target: Optional[bool] = None,
 ):
     """
     Run inference.
@@ -36,6 +37,8 @@ def inference(
         feat_cols: Feature column names (used for both DataFrame selection and numpy array labeling)
         out_dir: Output directory for results (only used when input is file path)
         return_df: If True, return DataFrame; if False, return raw predictions
+        log_target: 模型是否在 log10(P1) 空间训练。None=自动读模型属性判断；
+                    旧模型（无该属性）按 P1 原始值处理。
     
     Returns:
         pd.DataFrame or np.ndarray: Prediction results
@@ -80,7 +83,19 @@ def inference(
 
     # 预测
     model = load_model(model_path)
+
+    # 判断模型是否在 log10(P1) 空间训练：优先用显式传参，否则读模型自带属性
+    if log_target is None:
+        attr = model.attributes().get("log_target")
+        log_target = (attr == "1")
+        if attr is None:
+            print("[Infer] 模型未记录目标空间，按 P1 原始值处理；"
+                  "若该模型是用 log10(P1) 训练的，请显式传 log_target=True")
+    print(f"[Infer] 目标空间: {'log10(P1)' if log_target else 'P1 原始值'}")
+
     y_pred = model.predict(dm)
+    if log_target:
+        y_pred = np.power(10.0, y_pred)      # log10 -> uW
 
     # 构建结果
     res_df = df.copy()
@@ -108,6 +123,8 @@ def get_args():
                        default=["Right_final", "Left_final", "Difference", "room_temperature"], 
                        help="feature column names")
     parser.add_argument("--output", default="./output", help="output directory")
+    parser.add_argument("--log_target", choices=["auto", "true", "false"], default="auto",
+                        help="目标空间：auto=读模型属性自动判断（默认），true/false=强制")
     return parser.parse_args()
 
 
@@ -118,5 +135,6 @@ if __name__ == "__main__":
         model_path=args.model,
         data=args.data, 
         feat_cols=args.feat_cols,
-        output_dir=args.output
+        output_dir=args.output,
+        log_target={"auto": None, "true": True, "false": False}[args.log_target],
     )

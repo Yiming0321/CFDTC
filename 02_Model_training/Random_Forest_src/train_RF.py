@@ -12,11 +12,12 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import KFold, cross_val_score
 
 
 # ---------- argument parsing ----------
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Random Forest regression with Train/Test split and detailed metrics")
+    parser = argparse.ArgumentParser(description="Random Forest regression with cross-validation")
     parser.add_argument("--data", type=str, required=True, help="Path to raw-data Excel file/ data in dataframe format")
     parser.add_argument("--model_dir", type=str, default="models", help="Directory where artefacts will be saved")
     parser.add_argument("--random_state", type=int, default=42, help="Random seed for reproducibility")
@@ -25,6 +26,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument( "--n_jobs", type=int, default=-1, help="Parallel jobs (-1 = use all cores)" )
     parser.add_argument( "--feature_cols", nargs="+", default=["Right_final", "Left_final", "Difference", "room_temperature"], help="Feature column names (space-separated)" )
     parser.add_argument("--target_col", type=str, default="P1(uW)", help="Target column name")
+    parser.add_argument("--cv_folds", type=int, default=5, help="Number of cross-validation folds")
+    parser.add_argument("--use_cv", action="store_true", default=True, help="Enable cross-validation")
     
     return parser.parse_args()
 
@@ -69,7 +72,9 @@ def train(data: str,
           max_depth: int | None = 10,
           n_jobs: int = -1,
           feat_cols: list[str]  = ["Right_final", "Left_final", "Difference", "room_temperature"],
-          target_col: str = "P1(uW)") -> None:
+          target_col: str = "P1(uW)",
+          cv_folds: int = 5,
+          use_cv: bool = True) -> None:
     """
     Train a Random-Forest regressor using all data,
     and persist model + artefacts.
@@ -94,7 +99,17 @@ def train(data: str,
         'n_jobs': n_jobs
     }
     
-    # 4. model training
+    # 4. CV
+    if use_cv:
+        print("[Train] Starting cross-validation…")
+        kf = KFold(n_splits=cv_folds, shuffle=True, random_state=random_state)
+        model_cv = RandomForestRegressor(**rf_params)
+        cv_scores = cross_val_score(model_cv, X, y, cv=kf, scoring='neg_root_mean_squared_error', n_jobs=n_jobs)
+        cv_rmse_mean = -cv_scores.mean()
+        cv_rmse_std = cv_scores.std()
+        print(f"[Train] CV RMSE: {cv_rmse_mean:.6f} (+/- {cv_rmse_std:.6f})")
+    
+    # 5. model training
     print("[Train] Training Random Forest…")
     model = RandomForestRegressor(**rf_params)
     model.fit(X, y)
@@ -123,5 +138,7 @@ if __name__ == "__main__":
         max_depth=args.max_depth,
         n_jobs=args.n_jobs,
         feat_cols=args.feature_cols,
-        target_col=args.target_col
+        target_col=args.target_col,
+        cv_folds=args.cv_folds,
+        use_cv=args.use_cv
     )

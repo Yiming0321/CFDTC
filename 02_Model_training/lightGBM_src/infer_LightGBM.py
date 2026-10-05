@@ -30,7 +30,13 @@ def inference(model_path: str,
     X = df[feat_cols].copy()
 
     # 3. predict
+    # 训练时若用了 log10(P1) 目标，模型里带有 log_target 标记，这里自动还原为 uW；
+    # 旧模型（无该标记）按原始 P1 处理
+    log_target = getattr(model, "log_target", False)
+    print(f"Target space: {'log10(P1)' if log_target else 'raw P1'}")
     y_pred = model.predict(X)
+    if log_target:
+        y_pred = 10 ** y_pred
     df[pred_col] = y_pred
 
     # 4. save results
@@ -59,7 +65,7 @@ if __name__ == "__main__":
     inference(
         model_path=args.model,
         input_path=args.input,
-        output_dir=args.out,
+        output_dir=args.output,
         feat_cols=args.feat,
         pred_col=args.pred_col
     )

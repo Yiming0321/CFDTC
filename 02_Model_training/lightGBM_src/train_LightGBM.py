@@ -38,7 +38,9 @@ def train(data: str,
     y = df[target_col].copy()
 
     # 2. create LightGBM dataset
-    train_data = lgb.Dataset(X, label=y)
+    # 训练目标取 log10(P1)：平方误差变成相对误差，低功率样本不再被高功率样本淹没
+    # （推理时需 10**pred 还原为 uW；模型里写入了 log_target 标记，推理端自动识别）
+    train_data = lgb.Dataset(X, label=np.log10(y))
 
     # 3. parameter dict
     params = {
@@ -64,12 +66,14 @@ def train(data: str,
         shuffle=True,
         metrics="rmse",
         seed=seed,
-        return_cvbooster=True,
+        callbacks=[lgb.early_stopping(stopping_rounds=100, verbose=False)],
     )
 
-    best_iter = len(cv_res["valid rmse-mean"])
-    best_rmse = cv_res["valid rmse-mean"][-1]
-    print(f"Best iteration = {best_iter},  Mean RMSE = {best_rmse:.4f}")
+    # 最佳轮数取 CV 曲线最小值的位置（不是结果长度）；早停未触发时即为跑满的轮数
+    best_iter = int(np.argmin(cv_res["valid rmse-mean"])) + 1
+    best_rmse = np.min(cv_res["valid rmse-mean"])
+    print(f"Best iteration = {best_iter} (CV 结果 {len(cv_res['valid rmse-mean'])} 行),  "
+          f"Mean RMSE = {best_rmse:.4f}")
 
     # 5. save CV curve
     cv_file = os.path.join(model_dir, f"cv_curve_{time_str}.xlsx")
@@ -79,7 +83,8 @@ def train(data: str,
     # 6. retrain on full data
     final_model = lgb.train(params, train_data, num_boost_round=best_iter)
 
-    # 7. persist model
+    # 7. persist model（把目标空间写进模型属性，推理时自动识别，无需额外的 meta 文件）
+    final_model.log_target = True
     model_file = os.path.join(model_dir, f"lightgbm_regression_{time_str}.pkl")
     joblib.dump(final_model, model_file)
     print(f"Model saved -> {model_file}")

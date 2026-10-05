@@ -69,30 +69,30 @@ class FlexibleMLP(nn.Module):
 # -------------------------------
 # 2. Data Preparation Function
 # -------------------------------
-def prepare_data(path, test_size=0.2, random_state=42):
+def prepare_data(path, val_size=0.2, random_state=42):
     """
-    Prepare training and testing data from Excel file.
+    Prepare training and validation data from Excel file.
     
     Loads data, applies log10 transformation to target variable, 
-    splits into train/test sets, and standardizes features.
+    splits into train/val sets, and standardizes features.
     
     Parameters:
     -----------
     path : str
         Path to the Excel data file
-    test_size : float
-        Proportion of dataset to include in test split (0-1)
+    val_size : float
+        Proportion of dataset to include in validation split (0-1)
     random_state : int
         Random seed for reproducibility
         
     Returns:
     --------
-    tuple : (X_train_tensor, X_test_tensor, y_train_tensor, y_test_tensor, 
+    tuple : (X_train_tensor, X_val_tensor, y_train_tensor, y_val_tensor, 
              scaler, X_all_tensor, y_all_log, X_data)
         - X_train_tensor: Training features as torch tensor
-        - X_test_tensor: Testing features as torch tensor  
+        - X_val_tensor: Validation features as torch tensor  
         - y_train_tensor: Training targets (log10 transformed)
-        - y_test_tensor: Testing targets (log10 transformed)
+        - y_val_tensor: Validation targets (log10 transformed)
         - scaler: Fitted StandardScaler object
         - X_all_tensor: All features as torch tensor
         - y_all_log: All targets as numpy array (log10 transformed)
@@ -104,35 +104,35 @@ def prepare_data(path, test_size=0.2, random_state=42):
     y = np.log10(data['P1(uW)'])  # Apply log10 transformation to target
     
     # Split data
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=random_state
+    X_train, X_val, y_train, y_val = train_test_split(
+        X, y, test_size=val_size, random_state=random_state
     )
     
     # Standardize features
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+    X_val_scaled = scaler.transform(X_val)
     
     # Convert to tensors
     X_train_tensor = torch.tensor(X_train_scaled, dtype=torch.float32)
     y_train_tensor = torch.tensor(y_train.values, dtype=torch.float32).reshape(-1, 1)
-    X_test_tensor = torch.tensor(X_test_scaled, dtype=torch.float32)
-    y_test_tensor = torch.tensor(y_test.values, dtype=torch.float32).reshape(-1, 1)
+    X_val_tensor = torch.tensor(X_val_scaled, dtype=torch.float32)
+    y_val_tensor = torch.tensor(y_val.values, dtype=torch.float32).reshape(-1, 1)
     
     # Process all data for final predictions
     X_all_scaled = scaler.transform(X)
     X_all_tensor = torch.tensor(X_all_scaled, dtype=torch.float32)
     y_all_log = y.values
     
-    return (X_train_tensor, X_test_tensor, 
-            y_train_tensor, y_test_tensor, 
+    return (X_train_tensor, X_val_tensor, 
+            y_train_tensor, y_val_tensor, 
             scaler, X_all_tensor, y_all_log, X)
 
 # -------------------------------
 # 3. Model Training Function
 # -------------------------------
 def train_mlp_model(
-    X_train, y_train, X_test, y_test,
+    X_train, y_train, X_val, y_val,
     hidden_sizes=[128] + [256] * 16 + [128],
     lr=0.0003, epochs=1000, patience=80
 ):
@@ -143,8 +143,8 @@ def train_mlp_model(
     -----------
     X_train, y_train : torch.Tensor
         Training data tensors
-    X_test, y_test : torch.Tensor
-        Testing data tensors for validation
+    X_val, y_val : torch.Tensor
+        Validation data tensors
     hidden_sizes : list
         Hidden layer architecture (list of neuron counts)
     lr : float
@@ -156,10 +156,10 @@ def train_mlp_model(
         
     Returns:
     --------
-    tuple : (model, train_losses, test_losses)
+    tuple : (model, train_losses, val_losses)
         - model: Trained model with best weights loaded
         - train_losses: List of training losses per epoch
-        - test_losses: List of testing losses per epoch
+        - val_losses: List of validation losses per epoch
     """
     # Initialize model
     input_size = X_train.shape[1]
@@ -176,9 +176,9 @@ def train_mlp_model(
     
     # Training loop
     train_losses = []
-    test_losses = []
+    val_losses = []
     
-    best_test_loss = float('inf')
+    best_val_loss = float('inf')
     no_improve_count = 0
     best_model_state = None
     
@@ -193,15 +193,15 @@ def train_mlp_model(
         
         model.eval()
         with torch.no_grad():
-            test_outputs = model(X_test)
-            test_loss = criterion(test_outputs, y_test)
+            val_outputs = model(X_val)
+            val_loss = criterion(val_outputs, y_val)
         
         train_losses.append(loss.item())
-        test_losses.append(test_loss.item())
+        val_losses.append(val_loss.item())
         
         # Update best model
-        if test_loss < best_test_loss - 1e-9:
-            best_test_loss = test_loss
+        if val_loss < best_val_loss - 1e-9:
+            best_val_loss = val_loss
             no_improve_count = 0
             best_model_state = copy.deepcopy(model.state_dict())
         else:
@@ -210,7 +210,7 @@ def train_mlp_model(
         if (epoch + 1) % 5 == 0:
             print(f'Epoch [{epoch+1}/{epochs}], '
                   f'Train Loss: {loss.item():.4f}, '
-                  f'Test Loss: {test_loss.item():.4f}')
+                  f'Val Loss: {val_loss.item():.4f}')
         
         if no_improve_count >= patience:
             print(f"Early stopping triggered at epoch {epoch+1}")
@@ -221,7 +221,7 @@ def train_mlp_model(
         model.load_state_dict(best_model_state)
         print("Best model weights loaded.")
     
-    return model, train_losses, test_losses
+    return model, train_losses, val_losses
 
 # -------------------------------
 # 4. Save Model Function
@@ -269,7 +269,7 @@ def save_model(model, scaler, X_data, save_dir):
 # -------------------------------
 # 5. Training Visualization Function
 # -------------------------------
-def visualize_training(model, X_test, y_test, train_losses, test_losses, save_dir):
+def visualize_training(model, X_val, y_val, train_losses, val_losses, save_dir):
     """
     Visualize training process and prediction results.
     
@@ -279,14 +279,14 @@ def visualize_training(model, X_test, y_test, train_losses, test_losses, save_di
     -----------
     model : FlexibleMLP
         Trained model
-    X_test : torch.Tensor
-        Test features
-    y_test : torch.Tensor
-        Test targets (log scale)
+    X_val : torch.Tensor
+        Validation features
+    y_val : torch.Tensor
+        Validation targets (log scale)
     train_losses : list
         Training loss history
-    test_losses : list
-        Testing loss history
+    val_losses : list
+        Validation loss history
     save_dir : str
         Directory to save the plot
         
@@ -300,20 +300,20 @@ def visualize_training(model, X_test, y_test, train_losses, test_losses, save_di
     # Loss curves
     plt.subplot(1, 2, 1)
     plt.plot(train_losses, label='Train Loss')
-    plt.plot(test_losses, label='Test Loss')
+    plt.plot(val_losses, label='Val Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title('Training and Test Loss')
+    plt.title('Training and Validation Loss')
     plt.legend()
     
     # Prediction scatter plot
     model.eval()
     with torch.no_grad():
-        predictions = model(X_test).numpy()
+        predictions = model(X_val).numpy()
     plt.subplot(1, 2, 2)
-    plt.scatter(y_test.numpy(), predictions, color='blue', alpha=0.5)
-    plt.plot([y_test.min(), y_test.max()],
-             [y_test.min(), y_test.max()], 'r--')
+    plt.scatter(y_val.numpy(), predictions, color='blue', alpha=0.5)
+    plt.plot([y_val.min(), y_val.max()],
+             [y_val.min(), y_val.max()], 'r--')
     plt.xlabel('Actual Values (log scale)')
     plt.ylabel('Predictions (log scale)')
     plt.title('Predictions vs Actual Values')
@@ -443,7 +443,7 @@ def predict_with_model(model, scaler, input_data):
 # -------------------------------
 # 8. Complete Training Pipeline
 # -------------------------------
-def train(data, model_dir, test_size=0.2, random_state=42, hidden_sizes=[128] + [256] * 16 + [128], lr=0.0003, epochs=1000, patience=80):
+def train(data, model_dir, val_size=0.2, random_state=42, hidden_sizes=[128] + [256] * 16 + [128], lr=0.0003, epochs=1000, patience=80):
     """
     End-to-end training pipeline.
     
@@ -456,8 +456,8 @@ def train(data, model_dir, test_size=0.2, random_state=42, hidden_sizes=[128] + 
         Path to Excel data file, pandas DataFrame, or numpy array
     save_dir : str
         Directory for saving model
-    test_size : float
-        Test set proportion (0-1)
+    val_size : float
+        Validation set proportion (0-1)
     random_state : int
         Random seed for reproducibility
     hidden_sizes : list
@@ -479,23 +479,23 @@ def train(data, model_dir, test_size=0.2, random_state=42, hidden_sizes=[128] + 
     
     # 1. Prepare data
     print("\n[load] Preparing data...")
-    (X_train, X_test, y_train, y_test, 
+    (X_train, X_val, y_train, y_val, 
      scaler, X_all, y_all_log, X_data) = prepare_data(
-        data, test_size=test_size, random_state=random_state
+        data, val_size=val_size, random_state=random_state
     )
     
     # 2. Train model
     print("\n[train] Starting training with train set...")
-    model, train_losses, test_losses = train_mlp_model(
-        X_train, y_train, X_test, y_test, 
+    model, train_losses, val_losses = train_mlp_model(
+        X_train, y_train, X_val, y_val, 
         hidden_sizes=hidden_sizes, lr=lr, epochs=epochs, patience=patience
     )
     
     # 3. Visualize training
     print("\n[train] Training with quick view ...")
     plot_path = visualize_training(
-        model, X_test, y_test, 
-        train_losses, test_losses, model_dir
+        model, X_val, y_val, 
+        train_losses, val_losses, model_dir
     )
     
     # 4. Save model
@@ -587,7 +587,7 @@ def get_args():
     parser = argparse.ArgumentParser(description="MLP Training")
     parser.add_argument("--data", required=True, help="path to input file (.xlsx or .csv) or directly pd.DataFrame/np.ndarray")
     parser.add_argument("--model_dir", default="./model", help="directory to save model")
-    parser.add_argument("--test_size", type=float, default=0.2, help="test set proportion (0-1)")
+    parser.add_argument("--val_size", type=float, default=0.2, help="validation set proportion (0-1)")
     parser.add_argument("--random_state", type=int, default=42, help="random seed for reproducibility")
     parser.add_argument("--hidden_sizes", nargs="+", type=int, default=[128] + [256] * 16 + [128], help="hidden layer sizes")
     parser.add_argument("--lr", type=float, default=0.0003, help="learning rate")
@@ -601,7 +601,7 @@ if __name__ == "__main__":
     training_results = train(
         data=args.data, 
         model_dir=args.model_dir,
-        test_size=args.test_size,
+        val_size=args.val_size,
         random_state=args.random_state,
         hidden_sizes=args.hidden_sizes,
         lr=args.lr,
